@@ -13,6 +13,11 @@ The following materials are used:
 ●	Capacitive Proximity Sensor
 
 
-In line with this, you are free to contribute in anyway that would optimize the way the code is written.
+In line with this, you are free to contribute in any way that optimizes the code's writing.
+
+Do note that the #DEFINE initialization is object to the author's design.
+
+
+
 
 -Dejel
