@@ -10,11 +10,17 @@ overall waste that goes to landfills.
 
 The following materials are used:
 ●	MB-102 Breadboard
+
 ●	Uno R3 Board
+
 ●	Servo Motor (SG90)
+
 ●	MQ135
+
 ●	Inductive Proximity Metal Detector
+
 ●	Ultrasonic HC SR04 Sensor
+
 ●	Capacitive Proximity Sensor
 
 
