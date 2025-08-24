@@ -1,153 +1,118 @@
-#include <Servo.h> ///library
+#include <Servo.h>
 
+// Define pins for sensors
+#define MQ135_PIN A0
+#define METAL_DETECTOR_PIN A1
+#define PROXIMITY_SENSOR_PIN A3
+#define MQ4_PIN A4
+#define TRIG_PIN 2 // TRIG pin
+#define ECHO_PIN 4 // ECHO pin
 
-
-//plastic bin pin definitions
-#define redpin 5
-#define bluepin 6
-#define greenpin 7
-#define plasticsensor A0
-#define metalsensor A1
-#define IR_plastic A3
-
-//metal bin pin definitions
-#define redpin_M 8
-#define bluepin_M 9
-#define greenpin_M 10
-#define metalsensor_M A2
-#define IR_metal A3
-
-
-Servo myservo; 
-Servo myservo_M; 
-
-
-
-int pos = 165; 
-int pos_M = 158; 
-
+// Create Servo object
+Servo servo1;
+Servo servo2;
+Servo servo3;
+Servo servo4;
+int IR_sensor_val = 0;
 
 void setup() {
+  // Start the serial connection 
+  Serial.begin(9600);
 
-    myservo.attach(11); 
-    myservo_M.attach(12); 
-    //RGB LED on plastic bin
-    pinMode(redpin,OUTPUT);
-    pinMode(bluepin,OUTPUT);
-    pinMode(greenpin,OUTPUT);
-    //RGB LED on metal bin
-    pinMode(redpin_M,OUTPUT);
-    pinMode(bluepin_M,OUTPUT);
-    pinMode(greenpin_M,OUTPUT);
-    //Create sensor values in pull up condition
-    pinMode(plasticsensor,INPUT_PULLUP);
-    pinMode(metalsensor,INPUT_PULLUP);
-    pinMode(metalsensor_M,INPUT_PULLUP);
-    //Activate IR sensor
-    pinMode(IR_plastic,INPUT);
-    pinMode(IR_metal,INPUT);
-    //start serial monitor
-    Serial.begin(9600);
-    //Set RGB LED on deafult vaues (white)
-    analogWrite(redpin,255);
-    analogWrite(bluepin,255);
-    analogWrite(greenpin,255);
-    analogWrite(redpin_M,255);
-    analogWrite(bluepin_M,255);
-    analogWrite(greenpin_M,255);
-
-
+  // Attach the servo to pin
+  servo1.attach(6);
+  servo2.attach(10);
+  servo3.attach(11);
+  servo4.attach(5);
+  pinMode(6, INPUT);
+  pinMode(10, INPUT);
+  pinMode(11, INPUT);
+  pinMode(5, INPUT);
+//INPUTS DATA, GIVES DATA TO ARDUINO
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+  pinMode(METAL_DETECTOR_PIN, INPUT);
+  pinMode(PROXIMITY_SENSOR_PIN, INPUT);
+  pinMode(MQ135_PIN, INPUT);
+  pinMode(MQ4_PIN, INPUT);
 }
-
 
 void loop() {
 
+  // Read values from the sensors
+  int mq4_val = analogRead(MQ4_PIN);
+  int mq135_val = analogRead(MQ135_PIN);
+  int metal_detector_val = digitalRead(METAL_DETECTOR_PIN);
+  int proximity_sensor_val = digitalRead(PROXIMITY_SENSOR_PIN);
+  int Ultrasonic_sensor_val = digitalRead(ECHO_PIN);
+  //Sends a SonicBoom to Detect Objects
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  //Calculate the distance
+  long duration = pulseIn(ECHO_PIN, HIGH);
+  Ultrasonic_sensor_val = duration*0.034/2;
 
-    int sensor_read_plastic=digitalRead(plasticsensor);
-    int sensor_read_metal=digitalRead(metalsensor);
-    int sensor_read_metaletal2=digitalRead(metalsensor_M);
-    int sensor_read_IR_plastic=digitalRead(IR_plastic);
-    int sensor_read_IR_metal=digitalRead(IR_metal);
-    Serial.println("plastic sensor");
-    Serial.println(sensor_read_plastic);
-    Serial.println("metal sensor");
-    Serial.println(sensor_read_metal);
-    Serial.println(sensor_read_metaletal2);
-    
-    ///Check if the trash bin is full
+  if (Ultrasonic_sensor_val <= 8) {
+    Serial.println(Ultrasonic_sensor_val);
+  } else {
+    Serial.println(Ultrasonic_sensor_val);
+  
 
-    //plastic bin
-    if(sensor_read_IR_plastic==1){
-        analogWrite(redpin,255);
-        analogWrite(bluepin,0);
-        analogWrite(greenpin,0);
-    }
-   //metal bin
-   if(sensor_read_IR_metal==1){
-        analogWrite(redpin_M,255);
-        analogWrite(bluepin_M,0);
-        analogWrite(greenpin_M,0);
-    }
-    
-    //Plastic bin
-    if((sensor_read_plastic==0)&&(sensor_read_metal!=1)){
-        for (pos = 160; pos >= 90; pos -= 1) {
-            // in steps of 1 degree
-            myservo.write(pos);
-            delay(1); 
-        }
-        analogWrite(redpin,255);
-        analogWrite(bluepin,0);
-        analogWrite(greenpin,255);
-        delay(2500);
-        for (pos = 90; pos <= 160; pos += 1) {
-            myservo.write(pos); 
-            delay(1); 
-        }
-        analogWrite(redpin,0);
-        analogWrite(bluepin,0);
-        analogWrite(greenpin,0);
-    
-    
-    }
+  delay(500);
+}
+  
+  Serial.print("MQ135 Value: ");
+  Serial.println(mq135_val);
+  Serial.print("MQ4 Value: ");
+  Serial.println(mq4_val);
+  Serial.print("Metal Detector Value: ");
+  Serial.println(metal_detector_val);
+  Serial.print("Proximity Sensor Value: ");
+  Serial.println(proximity_sensor_val);
 
-    else{
-        // keep the door close
-        myservo.write(pos); 
-        analogWrite(redpin,255);
-        analogWrite(bluepin,255);
-        analogWrite(greenpin,255);
+  delay(500); 
+//NON-BIODEGRADABLE  
+  mq4_val = analogRead(A4);
+  mq135_val = analogRead(A0);
+  proximity_sensor_val = digitalRead(A3);
+  metal_detector_val = digitalRead(A1);
+  Ultrasonic_sensor_val = duration*0.034/2;
+//Conditions
+  if (Ultrasonic_sensor_val <= 20 && proximity_sensor_val == 0 && metal_detector_val == 1 ) {
+    // NON-BIODEGRADABLE
+    servo4.write(60);  // Open Servo1 
+    delay(500);
+    servo2.write(0);    
+    servo3.write(0);    
+    servo1.write(0);    
+  } 
+  else if (Ultrasonic_sensor_val <= 20 && proximity_sensor_val == 1 && metal_detector_val == 0 ) {
+    //RECYCLABLE
+    servo3.write(60);  // Open Servo3
+    delay(500);
+    servo1.write(0);    
+    servo2.write(0);    
+    servo4.write(0);    
+  } 
+else if (Ultrasonic_sensor_val <= 20 && proximity_sensor_val == 1 && metal_detector_val == 1 ) {
+  //BIODEGRADABLE
+    servo2.write(60);  // Open Servo2
+    delay(500);
+    servo1.write(0);     
+    servo3.write(0);    
+    servo4.write(0);    
     
-    }
-    //metal bin
-    
-    if(sensor_read_metaletal2==1){
-        for (pos_M = 160; pos_M >= 90; pos_M -= 1) { 
-      
-            myservo_M.write(pos_M); 
-            delay(1); 
-        }
-        analogWrite(redpin_M,255);
-        analogWrite(bluepin_M,0);
-        analogWrite(greenpin_M,255);
-        delay(2500);
-        for (pos_M = 90; pos_M <= 160; pos_M += 1) { 
-            myservo_M.write(pos_M); 
-            delay(1); 
-    
-        }
-        analogWrite(redpin_M,0);
-        analogWrite(bluepin_M,0);
-        analogWrite(greenpin_M,0);
-    }
-    else{
-        // keeps the door close
-        myservo_M.write(pos_M); 
-        analogWrite(redpin_M,255);
-        analogWrite(bluepin_M,255);
-        analogWrite(greenpin_M,255);
-    //Duplicates of many sensors writting in codes, don't know if libraries are correct. - Dejel
-    }
-    
+  } 
+  else {
+    //Close all servos
+    servo1.write(0);
+    servo2.write(0);
+    servo3.write(0);
+    servo4.write(0);
+  }
 
+  delay(15);  // Delay for stability and to prevent rapid changes
 }
